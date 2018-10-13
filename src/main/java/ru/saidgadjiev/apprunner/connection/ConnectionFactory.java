@@ -1,6 +1,7 @@
 package ru.saidgadjiev.apprunner.connection;
 
 import org.apache.commons.lang.StringUtils;
+import org.postgresql.ds.PGSimpleDataSource;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -8,7 +9,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -16,10 +16,10 @@ public class ConnectionFactory {
 
     private static ConnectionFactory INSTANCE;
 
-    private String url;
+    private ConnectionSource connectionSource;
 
-    public ConnectionFactory(String url) {
-        this.url = url;
+    public ConnectionFactory(ConnectionSource connectionSource) {
+        this.connectionSource = connectionSource;
     }
 
     public static ConnectionFactory getInstance() {
@@ -27,8 +27,7 @@ public class ConnectionFactory {
             try {
                 Properties properties = loadProperties();
 
-                loadDriver(properties.getProperty("driver"));
-                INSTANCE = new ConnectionFactory(properties.getProperty("url"));
+                INSTANCE = new ConnectionFactory(createConnectionSource(properties));
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
@@ -36,12 +35,18 @@ public class ConnectionFactory {
         return INSTANCE;
     }
 
-    public Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(url);
+    public DatabaseConnection getConnection() throws SQLException {
+        return connectionSource.getConnection();
     }
 
-    private static void loadDriver(String driverName) throws ClassNotFoundException {
-        Class.forName(driverName);
+    private static ConnectionSource createConnectionSource(Properties properties) {
+        String db = properties.getProperty("db");
+
+        if (db.equals("postgresql")) {
+            return new PostgreSQLConnectionSource(properties);
+        }
+
+        throw new IllegalArgumentException("Unsupported db");
     }
 
     private static Properties loadProperties() throws IOException {
@@ -58,8 +63,10 @@ public class ConnectionFactory {
             try (InputStream input = new FileInputStream(file)) {
                 properties.load(input);
             }
+
+            return properties;
         }
 
-        return properties;
+        throw new IllegalArgumentException("Miss runner.properties");
     }
 }

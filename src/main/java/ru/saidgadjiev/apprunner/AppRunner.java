@@ -6,7 +6,7 @@ import java.io.File;
 
 public class AppRunner {
 
-    private static final String PARAM_PATTERN = "f:";
+    private static final String PARAM_PATTERN = "f:t:";
 
     public static void main(String[] args) {
         Getopt g = new Getopt(Runner.class.getSimpleName(), args, PARAM_PATTERN);
@@ -19,6 +19,9 @@ public class AppRunner {
             switch (c) {
                 case 'f':
                     runner.addFile(new File(arg));
+                    break;
+                case 't':
+                    runner.addTarget(arg);
                     break;
             }
         }

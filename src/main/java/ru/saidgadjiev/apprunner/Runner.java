@@ -1,6 +1,8 @@
 package ru.saidgadjiev.apprunner;
 
 import org.apache.tools.ant.*;
+import ru.saidgadjiev.apprunner.task.DcTask;
+import ru.saidgadjiev.apprunner.task.SqlFileTask;
 import ru.saidgadjiev.apprunner.task.SqlTask;
 
 import java.io.File;
@@ -11,6 +13,8 @@ import java.util.Vector;
 public class Runner {
 
     private Collection<File> files = new ArrayList<>();
+
+    private Vector<String> targets = new Vector<>();
 
     public void execute() {
         if (files.isEmpty()) {
@@ -36,7 +40,7 @@ public class Runner {
             logger.setMessageOutputLevel(Project.MSG_INFO);
 
             project.addBuildListener(logger);
-            project.executeTargets(new Vector<>());
+            project.executeTargets(targets);
         }
     }
 
@@ -44,7 +48,13 @@ public class Runner {
         files.add(file);
     }
 
+    public void addTarget(String target) {
+        targets.add(target);
+    }
+
     private static void addTaskDefinitions(Project project) {
         project.addTaskDefinition("Sql", SqlTask.class);
+        project.addTaskDefinition("SqlFile", SqlFileTask.class);
+        project.addTaskDefinition("Dc", DcTask.class);
     }
 }
