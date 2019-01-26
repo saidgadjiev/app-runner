@@ -42,7 +42,7 @@ public class ConnectionFactory {
     private static ConnectionSource createConnectionSource(Properties properties) {
         String db = properties.getProperty("db");
 
-        if (db.equals("postgresql")) {
+        if ("postgresql".equals(db)) {
             return new PostgreSQLConnectionSource(properties);
         }
 
